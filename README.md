@@ -66,10 +66,12 @@ df_destinasi[['Price', 'Rating']].describe()
 Analisis statistik menunjukkan variasi harga destinasi yang signifikan, mulai dari gratis hingga Rp 900,000 dengan rata-rata Rp 24,652. Rating destinasi secara keseluruhan sangat baik dengan rata-rata 4.44 dari 5, dengan rentang rating 3.40 hingga 5.00, mengindikasikan kepuasan pengunjung yang tinggi terhadap destinasi-destinasi wisata tersebut.
 #### 1.2 Kota dengan Rating Tertinggi
 ![rating kota](https://raw.githubusercontent.com/asfararikza/Sistem-Rekomendasi-Destinasi-Wisata/refs/heads/main/images/Kota%20rating%20tertinggi.png)
+
 Pada dataset ini menunjukkan bahwa kota yang memiliki rata-rata rating destinasi wisata tertinggi adalah Jakarta. Kemudian diikuti dengan kota Yogyakarta yang terkenal dengan destinasi wisata bersejarahnya.
 
 ### 1.3 Distribusi Kategori Destinasi
 ![jumlah wisata](https://raw.githubusercontent.com/asfararikza/Sistem-Rekomendasi-Destinasi-Wisata/refs/heads/main/images/jumlah%20wisata.png)
+
 Berdasarkan pie chart yang dihasilkan:
 * Taman Hiburan memiliki persentase terbesar dari total destinasi wisata
 * Diikuti oleh destinasi Budaya dan Cagar Alam
