@@ -170,6 +170,8 @@ Kekurangan:
    - Sebuah fungsi `destination_recommendations` didefinisikan untuk memberikan rekomendasi berdasarkan kemiripan. Fungsi ini mengambil nama destinasi sebagai input dan mengembalikan sejumlah destinasi serupa (k) berdasarkan nilai kemiripan tertinggi.
 
 **Output Model**
+
+
 ![output](https://raw.githubusercontent.com/asfararikza/Sistem-Rekomendasi-Destinasi-Wisata/refs/heads/main/images/Output%20content%20based%20filtering.png)
 
 ---
@@ -205,6 +207,8 @@ Kekurangan:
    - Setelah model dilatih, dilakukan prediksi untuk rekomendasi destinasi bagi pengguna yang dipilih. Destinasi yang telah dikunjungi oleh pengguna diambil, dan destinasi yang belum dikunjungi diidentifikasi. Rekomendasi diberikan berdasarkan rating tertinggi yang diprediksi oleh model untuk destinasi yang belum dikunjungi.
   
 **Output Model**
+
+
 ![output colab](https://raw.githubusercontent.com/asfararikza/Sistem-Rekomendasi-Destinasi-Wisata/refs/heads/main/images/output%20collaborative%20filtering.png)
 
 
