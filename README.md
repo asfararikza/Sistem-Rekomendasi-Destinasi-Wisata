@@ -21,7 +21,7 @@ Referensi:
 ---
 
 ### Problem Statements
-Industri pariwisata di Indonesia, terutama di Kabupaten Malang, menghadapi tantangan serius akibat minimnya informasi yang tersedia tentang destinasi wisata. Banyak wisatawan kesulitan untuk menemukan tempat wisata yang sesuai dengan preferensi mereka, sehingga mengurangi kepuasan dan pengalaman berwisata. Selain itu, dengan banyaknya pilihan yang ada, wisatawan sering merasa bingung dan tidak yakin dalam memilih destinasi yang tepat, yang dapat berujung pada keputusan pembelian yang salah.
+Industri pariwisata di Indonesia, menghadapi tantangan serius akibat minimnya informasi yang tersedia tentang destinasi wisata. Banyak wisatawan kesulitan untuk menemukan tempat wisata yang sesuai dengan preferensi mereka, sehingga mengurangi kepuasan dan pengalaman berwisata. Selain itu, dengan banyaknya pilihan yang ada, wisatawan sering merasa bingung dan tidak yakin dalam memilih destinasi yang tepat, yang dapat berujung pada keputusan pembelian yang salah.
 
 ### Goals
 Tujuan dari pengembangan sistem rekomendasi ini adalah untuk:
@@ -40,6 +40,10 @@ Untuk mencapai tujuan tersebut, dua pendekatan solusi dapat diimplementasikan:
 
 Dataset yang digunakan dalam proyek ini adalah Indonesia Tourism Destination yang tersedia di [Kaggle](https://www.kaggle.com/datasets/aprabowo/indonesia-tourism-destination/data?select=tourism_rating.csv). Dataset ini terdiri dari beberapa file:
 
+### Dataset
+
+---
+
 1. **tourism_with_id.csv** (437 records):
    - Place_Id: ID unik untuk setiap destinasi
    - Place_Name: Nama destinasi wisata
@@ -48,12 +52,48 @@ Dataset yang digunakan dalam proyek ini adalah Indonesia Tourism Destination yan
    - City: Kota lokasi wisata
    - Price: Harga tiket masuk
    - Rating: Rating rata-rata destinasi
+   - Time_Minutes : waktu tempuh dari pusat kota
    - Location: Koordinat lokasi
+
+Dataset ini terdiri dari **437 baris** dan **11 kolom**. Berikut adalah tabel yang menunjukkan nama kolom dan tipe data masing-masing:
+
+| Column        | Dtype      |
+|---------------|------------|
+| Place_Id      | int64      |
+| Place_Name    | object     |
+| Description   | object     |
+| Category      | object     |
+| City          | object     |
+| Price         | int64      |
+| Rating        | float64    |
+| Time_Minutes  | float64    |
+| Coordinate    | object     |
+| Lat           | float64    |
+| Long          | float64    |
 
 2. **tourism_rating.csv** (10000 records):
    - User_Id: ID unik pengguna
    - Place_Id: ID destinasi wisata
    - Place_Ratings: Rating yang diberikan (1-5)
+  
+Dataset ini terdiri dari 3 kolom yang menunjukkan nama kolom dan tipe data masing-masing.
+
+| Column         | Dtype   |
+|----------------|---------|
+| User_Id        | int64   |
+| Place_Id       | int64   |
+| Place_Ratings  | int64   |
+
+### Pemeriksaan Missing Value
+
+---
+
+Dilakukan pemeriksaan data kosong (missing value) pada dataset. Langkah ini penting untuk memastikan bahwa setiap tempat wisata memiliki informasi yang lengkap. Berdasarkan hasil pemeriksaan, semua dataset ini tidak memiliki nilai kosong.
+
+### Pemeriksaan Duplikat
+
+---
+Jumlah data duplikat dicek menggunakan `duplicated().sum()`. Duplikasi perlu dihindari karena dapat menyebabkan bias dalam rekomendasi, di mana destinasi yang sama bisa lebih sering muncul dalam rekomendasi. Berdasarkan hasil pemeriksaan, dataset tidak memiliki data duplikat.
 
 ## Exploratory Data Analysis (EDA)
 ---
@@ -64,7 +104,10 @@ Dataset yang digunakan dalam proyek ini adalah Indonesia Tourism Destination yan
 df_destinasi[['Price', 'Rating']].describe()
 ```
 Analisis statistik menunjukkan variasi harga destinasi yang signifikan, mulai dari gratis hingga Rp 900,000 dengan rata-rata Rp 24,652. Rating destinasi secara keseluruhan sangat baik dengan rata-rata 4.44 dari 5, dengan rentang rating 3.40 hingga 5.00, mengindikasikan kepuasan pengunjung yang tinggi terhadap destinasi-destinasi wisata tersebut.
+
+
 #### 1.2 Kota dengan Rating Tertinggi
+
 ![rating kota](https://raw.githubusercontent.com/asfararikza/Sistem-Rekomendasi-Destinasi-Wisata/refs/heads/main/images/Kota%20rating%20tertinggi.png)
 
 Pada dataset ini menunjukkan bahwa kota yang memiliki rata-rata rating destinasi wisata tertinggi adalah Jakarta. Kemudian diikuti dengan kota Yogyakarta yang terkenal dengan destinasi wisata bersejarahnya.
@@ -104,12 +147,12 @@ Pada tahap ini, dilakukan beberapa langkah untuk menyiapkan data yang akan digun
 
 2. **Menggabungkan Informasi Deskripsi, Kategori, dan Kota Menjadi Kolom `Tags`**  
    - Kolom `Tags` dibuat dengan menggabungkan kolom `Description`, `Category`, dan `City`. Kolom ini akan menjadi dasar untuk menghitung kesamaan konten dalam model. Langkah ini dilakukan agar setiap destinasi memiliki representasi teks yang komprehensif, sehingga model dapat memahami preferensi pengguna berdasarkan kata-kata yang muncul di deskripsi, kategori, dan kota.
+  
+3. **Menggunakan TF-IDF Vectorization**  
+   - Untuk menangkap fitur dari teks yang ada di kolom `Tags`, `TfidfVectorizer` dari `sklearn` digunakan. Proses ini mengubah teks menjadi matriks vektor TF-IDF, yang mengukur seberapa penting kata dalam sebuah dokumen relatif terhadap koleksi dokumen (corpus).
 
-3. **Pemeriksaan Missing Value**  
-   - Dilakukan pemeriksaan data kosong (missing value) pada kolom `Tags` menggunakan `all_destinasi.isnull().sum()`. Langkah ini penting untuk memastikan bahwa setiap tempat wisata memiliki informasi yang lengkap. Data yang kosong dapat menyebabkan masalah saat model mencoba menghitung kesamaan antar destinasi.
-
-4. **Pemeriksaan Duplikat**  
-   - Jumlah data duplikat dicek menggunakan `all_destinasi.duplicated().sum()`. Duplikasi perlu dihindari karena dapat menyebabkan bias dalam rekomendasi, di mana destinasi yang sama bisa lebih sering muncul dalam rekomendasi.
+4. **Membentuk Matriks TF-IDF**  
+   - Matriks TF-IDF yang dihasilkan kemudian diubah menjadi bentuk matriks padat dengan `todense()`, dan diorganisasi ke dalam DataFrame yang menunjukkan kemunculan kata-kata dalam setiap destinasi.
 
 ### B. Preparation untuk Collaborative Filtering
 
@@ -155,12 +198,6 @@ Kekurangan:
 - Tidak dapat mempelajari preferensi pengguna
 
 **Proses Modeling Content-Based Filtering**
-
-1. **Menggunakan TF-IDF Vectorization**  
-   - Untuk menangkap fitur dari teks yang ada di kolom `Tags`, `TfidfVectorizer` dari `sklearn` digunakan. Proses ini mengubah teks menjadi matriks vektor TF-IDF, yang mengukur seberapa penting kata dalam sebuah dokumen relatif terhadap koleksi dokumen (corpus).
-
-2. **Membentuk Matriks TF-IDF**  
-   - Matriks TF-IDF yang dihasilkan kemudian diubah menjadi bentuk matriks padat dengan `todense()`, dan diorganisasi ke dalam DataFrame yang menunjukkan kemunculan kata-kata dalam setiap destinasi.
 
 3. **Menghitung Cosine Similarity**  
    - Menggunakan `cosine_similarity` untuk menghitung kemiripan antara semua destinasi berdasarkan matriks TF-IDF. Matriks ini berisi nilai kemiripan antara setiap pasangan destinasi.
@@ -240,6 +277,18 @@ Model collaborative filtering ini menghasilkan nilai **loss** sebesar **0.6464**
 
 Secara keseluruhan, nilai **loss** yang relatif rendah, bersama dengan **RMSE** yang juga rendah (**0.3110** untuk pelatihan dan **0.3598** untuk validasi), menunjukkan bahwa model mampu memprediksi rating dengan akurat, meskipun ada sedikit kekhawatiran mengenai kemampuan model dalam menggeneralisasi pada data baru.
 
+## Evaluasi dari Business Understanding
+
+---
+
+### 1. Problem Statements
+Sistem yang dibangun berhasil menjawab problem statement yang diidentifikasi, yaitu dengan menyediakan **informasi lengkap** mengenai destinasi wisata di Indonesia. Dengan sistem rekomendasi ini, wisatawan dapat dengan mudah menemukan tempat wisata yang sesuai dengan **preferensi** mereka, sehingga mengurangi kebingungan dalam memilih destinasi dan meningkatkan **kepuasan** mereka saat berwisata.
+
+### 2. Goals
+Pengembangan sistem rekomendasi ini berhasil mencapai **goals** yang diharapkan, yaitu meningkatkan **akses informasi** tentang destinasi wisata yang tersedia dan membantu wisatawan menemukan tempat wisata yang sesuai dengan preferensi mereka. Hasil evaluasi menunjukkan bahwa sistem ini efektif dalam menyediakan rekomendasi yang relevan dan bermanfaat bagi pengguna.
+
+### 3. Solution Approach
+Solusi yang direncanakan melalui pendekatan **Content-Based Filtering** dan **Collaborative Filtering** terbukti berdampak signifikan. Pendekatan ini tidak hanya menganalisis karakteristik dan fitur dari destinasi wisata, tetapi juga memanfaatkan data pengguna untuk memberikan rekomendasi yang lebih **personalized**. Dengan demikian, sistem ini mampu memenuhi kebutuhan wisatawan dan meningkatkan pengalaman mereka dalam menjelajahi destinasi wisata di Kabupaten Malang.
 
 
 ## Kesimpulan
